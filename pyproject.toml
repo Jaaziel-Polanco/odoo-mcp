@@ -1,0 +1,127 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-server-odoo"
+version = "2.4.1"
+description = "AI connector for Odoo ERP -- connect Claude, ChatGPT, and other AI tools to Odoo via MCP (Model Context Protocol)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Andrey Ivanov", email = "ivnv.xd@gmail.com" }
+]
+maintainers = [
+    { name = "Andrey Ivanov", email = "ivnv.xd@gmail.com" }
+]
+license = { text = "Elastic-2.0" }
+keywords = ["mcp", "odoo", "erp", "model-context-protocol", "ai", "llm", "claude", "anthropic", "connector", "odoo-connector", "integration", "odoo-integration", "erp-connector"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "mcp>=1.27.2,<2",
+    "httpx>=0.28.1",
+    "curl_cffi>=0.15.0",
+    "python-dotenv>=1.2.2",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/ivnvxd/mcp-server-odoo"
+Documentation = "https://github.com/ivnvxd/mcp-server-odoo#readme"
+Repository = "https://github.com/ivnvxd/mcp-server-odoo"
+Issues = "https://github.com/ivnvxd/mcp-server-odoo/issues"
+Changelog = "https://github.com/ivnvxd/mcp-server-odoo/releases"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1.0",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "ty>=0.0.49",
+    # Upper bound on purpose: ruff 0.16 widens the default rule set and starts
+    # formatting python blocks inside markdown, so it fails the lint job on files
+    # a PR never touched. CI installs whatever this range allows. Raise the bound
+    # deliberately, with the cleanup in the same change.
+    "ruff>=0.15.16,<0.16",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+mcp-server-odoo = "mcp_server_odoo.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcp_server_odoo"]
+
+# Ship the skills/ content dir inside the wheel. Without this, `pip install`
+# only bundles mcp_server_odoo/ and skill:// resources are silently empty.
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "mcp_server_odoo/_skill_data"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+]
+
+[tool.coverage.run]
+source = ["mcp_server_odoo"]
+omit = ["tests/*", "*/__pycache__/*", "*/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.ty.src]
+include = ["mcp_server_odoo/"]
+exclude = ["venv/", ".venv/", "build/", "dist/"]
+
+[tool.ty.rules]
+possibly-unresolved-reference = "warn"
+invalid-argument-type = "ignore"
+invalid-parameter-default = "error"
+invalid-return-type = "warn"
+invalid-assignment = "warn"
+unresolved-attribute = "ignore"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "B", "Q"]
+ignore = ["E501", "N818"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.49",
+]
